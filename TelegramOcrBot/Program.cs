@@ -17,28 +17,27 @@ class Program
     {
         try
         {
-           Console.WriteLine($"Tessdata yo'li: {TessDataPath}"); 
+            Console.WriteLine($"Tessdata path: {TessDataPath}");
             if (!Directory.Exists(TessDataPath))
             {
-                Console.WriteLine("Xato: 'tessdata' papkasi topilmadi. Til fayllarini to'g'ri joylashtirganingizga ishonch hosil qiling.");
-                Console.WriteLine("Visual Studio'da 'tessdata' papkasidagi har bir '.traineddata' faylini tanlab, ");
-                Console.WriteLine("'Properties' oynasida 'Copy to Output Directory' xususiyatini 'Copy always' ga o'rnating.");
+                Console.WriteLine("Error: 'tessdata' folder not found. Make sure you have placed the language files correctly.");
+                Console.WriteLine("In Visual Studio, select each '.traineddata' file in the 'tessdata' folder,");
+                Console.WriteLine("In the 'Properties' window, set the 'Copy to Output Directory' property to 'Copy always'.");
                 return;
             }
 
             Languages = GetAllAvailableTesseractLanguages(TessDataPath);
             if (string.IsNullOrEmpty(Languages))
             {
-                Console.WriteLine("Xato: 'tessdata' papkasida hech qanday '.traineddata' fayli topilmadi.");
-                Console.WriteLine("Iltimos, kerakli til fayllarini yuklab oling va 'tessdata' papkasiga joylashtiring.");
+                Console.WriteLine("Error: No '.traineddata' file found in the 'tessdata' folder.");
                 return;
             }
-            Console.WriteLine($"Aniqlangan tillar: {Languages}");
+            Console.WriteLine($"Detected languages:{Languages}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Dastlabki tekshiruvida xato: {ex.Message}");
-            Console.WriteLine("Dastur to'xtatiladi.");
+            Console.WriteLine($"Error in initial check: {ex.Message}");
+            Console.WriteLine("The program will be stopped.");
             return;
         }
 
@@ -59,12 +58,12 @@ class Program
         );
 
         var me = await botClient.GetMeAsync();
-        Console.WriteLine($"Bot ishga tushdi: @{me.Username}");
-        Console.WriteLine("Har qanday tugmani bosib botni to'xtatishingiz mumkin.");
+        Console.WriteLine($"Bot started: @{me.Username}");
+        Console.WriteLine("You can stop the bot by pressing any button.");
         Console.ReadKey();
 
         cts.Cancel();
-        Console.WriteLine("Bot to'xtatildi.");
+        Console.WriteLine("The bot has been stopped.");
     }
 
     private static string GetAllAvailableTesseractLanguages(string tessdataPath)
@@ -97,13 +96,13 @@ class Program
         {
             await botClient.SendTextMessageAsync(
                 chatId: message.Chat.Id,
-                text: "Iltimos, matnni aniqlash uchun rasm yuboring.",
+                text: "Please send a picture to identify the text.",
                 cancellationToken: cancellationToken
             );
             return;
         }
 
-        Console.WriteLine($"Rasmli xabar qabul qilindi. Chat ID: {message.Chat.Id}");
+        Console.WriteLine($"Picture message received. Chat ID: {message.Chat.Id}");
 
         var photo = photoArray[^1];
         var fileId = photo.FileId;
@@ -112,7 +111,7 @@ class Program
         {
             await botClient.SendTextMessageAsync(
                 chatId: message.Chat.Id,
-                text: "Rasmingizni qayta ishlayapman, iltimos kuting...",
+                text: "I'm processing your image, please wait...",
                 cancellationToken: cancellationToken
             );
 
@@ -136,14 +135,14 @@ class Program
 
                 if (!string.IsNullOrWhiteSpace(recognizedText))
                 {
-                    Console.WriteLine($"Aniqangan matn (xom holatda):\n{recognizedText}");
+                    Console.WriteLine($"Defined text (xom holatda):\n{recognizedText}");
 
                     recognizedText = recognizedText.Trim(); 
                     recognizedText = Regex.Replace(recognizedText, @"\n\s*\n", "\n\n");
                     recognizedText = Regex.Replace(recognizedText, @" {2,}", " ");
 
 
-                    string formattedText = $"Rasmdagi matn:\n\n```\n{EscapeMarkdownV2(recognizedText)}\n```";
+                    string formattedText = $"Text in the picture:\n\n```\n{EscapeMarkdownV2(recognizedText)}\n```";
 
 
                     await botClient.SendTextMessageAsync(
@@ -157,7 +156,7 @@ class Program
                 {
                     await botClient.SendTextMessageAsync(
                         chatId: message.Chat.Id,
-                        text: "Rasmdan matn topilmadi. Yoki rasmda matn yo'q, yoki u o'qish qiyin holatda.",
+                        text: "No text found in the image. Either the image has no text, or it is difficult to read.",
                         cancellationToken: cancellationToken
                     );
                 }
@@ -165,10 +164,10 @@ class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Xabarni qayta ishlashda xato: {ex.Message}");
+            Console.WriteLine($"Error processing message: {ex.Message}");
             await botClient.SendTextMessageAsync(
                 chatId: message.Chat.Id,
-                text: $"Rasmdagi matnni aniqlashda xatolik yuz berdi: {ex.Message}",
+                text: $"There was an error recognizing the text in the image: {ex.Message}",
                 cancellationToken: cancellationToken
             );
         }
@@ -176,7 +175,7 @@ class Program
 
     static Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Polling xatosi: {exception.Message}");
+        Console.WriteLine($"Polling error: {exception.Message}");
         return Task.CompletedTask;
     }
 }
