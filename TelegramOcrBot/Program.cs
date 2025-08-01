@@ -17,7 +17,7 @@ class Program
     {
         try
         {
-            Console.WriteLine($"Tessdata yo'li: {TessDataPath}");
+           Console.WriteLine($"Tessdata yo'li: {TessDataPath}"); 
             if (!Directory.Exists(TessDataPath))
             {
                 Console.WriteLine("Xato: 'tessdata' papkasi topilmadi. Til fayllarini to'g'ri joylashtirganingizga ishonch hosil qiling.");
