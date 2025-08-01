@@ -17,7 +17,7 @@ class Program
     {
         try
         {
-            Console.WriteLine($"Tessdata yo'li: {TessDataPath}");
+            Console.WriteLine($"Tessdata path: {TessDataPath}");
             if (!Directory.Exists(TessDataPath))
             {
                 Console.WriteLine("Error: 'tessdata' folder not found. Make sure you have placed the language files correctly.");
